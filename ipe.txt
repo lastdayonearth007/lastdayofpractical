@@ -1,0 +1,1842 @@
+fsd 
+1……>
+const fs = require('fs);
+function iskaprekarnumber(number) {
+ if (number === 1) return true;
+ const square = number * number;
+ const squarestr = square.tostring();
+ for (let i = 1; i < squarestr.length; i++) {
+ const leftpart = parseint(squarestr.slice(0, i));
+ const rightpart = parseint(squarestr.slice(i));
+ if (leftpart + rightpart === number && leftpart !== 0 && rightpart !== 0) {
+ return true;
+ }
+ }
+ return false;
+}
+function findkaprekarnumbers(start, end) {
+ const kaprekarnumbers = [];
+ for (let i = start; i <= end; i++) {
+ if (iskaprekarnumber(i)) {
+ kaprekarnumbers.push(i);
+ }
+ }
+ return kaprekarnumbers;
+}
+const start = 1;
+const end = 1000;
+const kaprekarnumbers = findkaprekarnumbers(start, end);
+fs.writefilesync('kaprekar_numbers.txt, kaprekarnumbers.join('\n), 'utf-8);
+console.log(`kaprekar numbers between ${start} and ${end} have been written to 
+kaprekar_numbers.txt`);
+node kaprekar.js
+2…..>
+const fs = require('fs);
+const sourcefile = 'source.txt;
+const destinationfile = 'destination.txt;
+// read the content from source.txt
+fs.readfile(sourcefile, 'utf-8, (err, data) => {
+ if (err) {
+ console.error(error reading ${sourcefile}: ${err});
+ return;
+ }
+ // write the content to destination.txt
+ fs.writefile(destinationfile, data, 'utf-8, (err) => {
+ if (err) {
+ console.error(error writing to ${destinationfile}: ${err});
+ } else {
+ console.log(content from ${sourcefile} copied to ${destinationfile} successfully.);
+ }
+ });
+});
+node copyfile.js
+3…..?
+const express = require('express);
+const cookieparser = require('cookie-parser);
+const app = express();
+const port = 3000;
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieparser());
+// serve html and css files from a public directory
+app.use(express.static('public));
+// render the signup form
+app.get('/, (req, res) => {
+ res.sendfile(__dirname + '/public/signup.html);
+});
+// handle form submission
+app.post('/submit, (req, res) => {
+ const { name, contactnumber, email, address, gender, dob } = req.body;
+ // store user information in a cookie with a 15-second expiration time
+ res.cookie('registered, json.stringify({ name, contactnumber, email, address, gender, dob }), { 
+maxage: 15000 });
+ // render a confirmation message
+ res.send('thank you for registering! <a href="/details">view details</a>);
+});
+// display user details from the cookie
+app.get('/details, (req, res) => {
+ const userdata = req.cookies.registered;
+ if (!userdata) {
+ return res.send('no user data found. <a href="/">go back</a>);
+ }
+ const user = json.parse(userdata);
+ // render user details and a logout link
+ res.send(`
+ <h2>user details:</h2>
+ <p>name: ${user.name}</p>
+ <p>contact number: ${user.contactnumber}</p>
+ <p>email: ${user.email}</p>
+ <p>address: ${user.address}</p>
+ <p>gender: ${user.gender}</p>
+ <p>dob: ${user.dob}</p>
+ <a href="/logout">logout</a>
+ `);
+});
+// logout by clearing the registered cookie
+app.get('/logout, (req, res) => {
+ res.clearcookie('registered);
+ res.redirect('/);
+});
+app.listen(port, () => {
+ console.log(server is running on port ${port});
+});
+npm install express cookie-parser
+node app.js
+4….>
+mkdir express-student-form
+cd express-student-form
+npm init -y
+npm install express pug
+const express = require('express);
+const app = express();
+const port = 3000;
+// set up pug as the view engine
+app.set('view engine, 'pug);
+app.set('views, __dirname + '/views);
+app.use(express.urlencoded({ extended: true }));
+// serve static files (e.g., stylesheets)
+app.use(express.static('public));
+// define a route to display the student form
+app.get('/, (req, res) => {
+ res.render('student-form);
+});
+// handle form submission and display submitted data
+app.post('/data, (req, res) => {
+ const { rollno, name, division, email, subject } = req.body;
+ res.render('display-data, { rollno, name, division, email, subject });
+});
+app.listen(port, () => {
+ console.log(server is running on port ${port});
+});
+doctype html
+html
+ head
+ title student form
+ body
+ h1 student form
+ form(action="/data", method="post")
+ label(for="rollno") roll no:
+ input(type="number", name="rollno", required)
+ br
+ label(for="name") name:
+ input(type="text", name="name", required)
+ br
+ label(for="division") division:
+ input(type="text", name="division", required)
+ br
+ label(for="email") email:
+ input(type="email", name="email", required)
+ br
+ label subject:
+ input(type="radio", name="subject", value="fsd-2", required) fsd-2
+ input(type="radio", name="subject", value="coa", required) coa
+ input(type="radio", name="subject", value="python-2", required) python-2
+ input(type="radio", name="subject", value="dm", required) dm
+ input(type="radio", name="subject", value="toc", required) toc
+ br
+ input(type="submit", value="submit")
+doctype html
+html
+ head
+ title student data
+ body
+ h1 student data
+ ul
+ li roll no: #{rollno}
+ li name: #{name}
+ li division: #{division}
+ li email: #{email}
+ li subject: #{subject}
+ a(href="/") back to form
+node app.js
+5….>
+const express = require('express);
+const multer = require('multer);
+const path = require('path);
+const app = express();
+const port = 3000;
+// set up multer for handling file uploads
+const storage = multer.memorystorage();
+const upload = multer({
+ storage: storage,
+ limits: { filesize: 1024 * 1024 }, // 1mb limit
+ filefilter: (req, file, cb) => {
+ // allow only text/plain mime type (text files)
+ if (file.mimetype === 'text/plain) {
+ cb(null, true);
+ } else {
+ cb(new error('only text files are allowed));
+ }
+ },
+});
+app.use(express.static('public));
+// serve the html form
+app.get('/, (req, res) => {
+ res.sendfile(path.join(__dirname, 'public, 'upload.html));
+});
+// handle file upload
+app.post('/upload, upload.single('file), (req, res) => {
+ if (!req.file) {
+ return res.status(400).send('no file uploaded.);
+ }
+ // access the file contents from req.file.buffer
+ const filecontents = req.file.buffer.tostring('utf-8);
+ // process the file contents here (e.g., save to a database, manipulate, etc.)
+ res.send(file uploaded successfully. contents: <pre>${filecontents}</pre>);
+});
+app.listen(port, () => {
+ console.log(server is running on port ${port});
+});
+<!doctype html>
+<html>
+<head>
+ <title>file upload</title>
+</head>
+<body>
+ <h1>upload a text file (max 1mb)</h1>
+ <form action="/upload" method="post" enctype="multipart/form-data">
+ <input type="file" name="file" accept=".txt" required>
+ <input type="submit" value="upload">
+ </form>
+</body>
+</html>
+npm install express multer
+node app.js
+6…>
+npm init -y
+npm install express
+const express = require('express);
+const session = require('express-session);
+const app = express();
+const port = 3000;
+// set up session middleware
+app.use(
+ session({
+ secret: 'mysecret, // change this to a more secure secret key
+ resave: false,
+ saveuninitialized: true,
+ })
+);
+// serve static files (html, css, etc.)
+app.use(express.static('public));
+// handle form submission and save the username in session
+app.post('/savesession, (req, res) => {
+ const { username } = req.body;
+ req.session.username = username;
+ res.redirect('/fetchsession);
+});
+// display session value and logout link
+app.get('/fetchsession, (req, res) => {
+ const username = req.session.username;
+ if (!username) {
+ res.redirect('/);
+ } else {
+ res.send(`
+ <h1>welcome, ${username}!</h1>
+ <a href="/deletesession">logout</a>
+ `);
+ }
+});
+// handle session deletion and redirect to the index page
+app.get('/deletesession, (req, res) => {
+ req.session.destroy((err) => {
+ if (err) {
+ console.error(err);
+ }
+ res.redirect('/);
+ });
+});
+app.listen(port, () => {
+ console.log(server is running on port ${port});
+});
+node app.js
+7….>
+<!doctype html>
+<html>
+<head>
+ <title>simple html page</title>
+</head>
+<body>
+ <h1>hello, world!</h1>
+ <p>this is a simple html page.</p>
+</body>
+</html>
+const http = require('http);
+const fs = require('fs);
+const path = require('path);
+const server = http.createserver((req, res) => {
+ // define the path to the html file
+ const filepath = path.join(__dirname, 'simple.html);
+ // check if the request url is for the html file
+ if (req.url === '/simple.html) {
+ // read the html file
+ fs.readfile(filepath, 'utf-8, (err, data) => {
+ if (err) {
+ res.writehead(500, { 'content-type: 'text/plain });
+ res.end('internal server error);
+ return;
+ }
+ // set the response headers and send the html content
+ res.writehead(200, { 'content-type: 'text/html });
+ res.end(data);
+ });
+ } else {
+ // handle other requests (e.g., 404 not found)
+ res.writehead(404, { 'content-type: 'text/plain });
+ res.end('not found);
+ }
+});
+const port = 3000;
+server.listen(port, () => {
+ console.log(server is running on http://localhost:${port});
+});
+node server.js
+8…..>
+pug file
+doctype html
+html
+ head
+ title online store
+ link(rel=stylesheet, href=/styles.css)
+ body
+ h1 welcome to our online store
+ h2 products
+ ul
+ each product in products
+ li
+ a(href=/products/${product.id})= product.name
+ a(href=/) go back home
+pug file
+doctype html
+html
+ head
+ title error
+ link(rel=stylesheet, href=/styles.css)
+ body
+ h1 error 404 – page not found
+ p the page you are looking for does not exist.
+ a(href=/) go back home
+const express = require('express);
+const app = express();
+const port = 3000;
+// define an array of product objects
+const products = [
+ { id: 1, name: 'product 1, description: 'description 1, price: '$10 },
+ { id: 2, name: 'product 2, description: 'description 2, price: '$20 },
+ { id: 3, name: 'product 3, description: 'description 3, price: '$30 },
+];
+// set the view engine and views directory
+app.set('view engine, 'pug);
+app.set('views, __dirname + '/views);
+// serve static files from the public directory
+app.use(express.static('public));
+// define a route to display a welcome message on the homepage
+app.get('/, (req, res) => {
+ res.send('welcome to our online store!);
+});
+// define a route to display a list of products
+app.get('/products, (req, res) => {
+ res.render('products, { products });
+});
+// define a dynamic route for product details
+app.get('/products/:id, (req, res) => {
+ const productid = parseint(req.params.id);
+ const product = products.find((p) => p.id === productid);
+ if (!product) {
+ res.status(404).render('error);
+ return;
+ }
+ res.send(product details: ${product.name}, ${product.description}, price: ${product.price});
+});
+// handle 404 errors
+app.use((req, res) => {
+ res.status(404).render('error);
+});
+app.listen(port, () => {
+ console.log(server is running on port ${port});
+});
+node app.js
+11….>
+let variable1 = 0;
+let variable2 = 0;
+function incrementanddisplay() {
+ variable1++;
+ variable2++;
+ const sum = variable1 + variable2;
+ console.log(variable 1: ${variable1}, variable 2: ${variable2}, sum: ${sum});
+}
+// call the incrementanddisplay function every 1 second (1000 milliseconds)
+setinterval(incrementanddisplay, 1000);
+12…>
+mkdir express-student-form
+cd express-student-form
+npm init -y
+npm install express pug
+pug file
+doctype html
+html
+ head
+ title student form
+ body
+ h1 student form
+ form(action="/student", method="post")
+ label(for="name") name:
+ input(type="text", name="name", required)
+ br
+ label(for="email") email:
+ input(type="email", name="email", required)
+ br
+ label course:
+ input(type="radio", name="course", value="ce", required) ce
+ input(type="radio", name="course", value="it", required) it
+ input(type="radio", name="course", value="cse", required) cse
+ br
+ input(type="submit", value="submit")
+create a pug file to display the submitted data (views/student.pug):
+pug file
+doctype html
+html
+ head
+ title student data
+ body
+ h1 student data
+ p name: #{name}
+ p email: #{email}
+ p course: #{course}
+ a(href="/") back to form
+create an express.js application in app.js:
+javascript:
+const express = require('express);
+const app = express();
+const port = 3000;
+app.set('view engine, 'pug);
+app.set('views, __dirname + '/views);
+app.use(express.urlencoded({ extended: true }));
+app.use(express.static('public));
+app.get('/, (req, res) => {
+ res.render('student-form);
+});
+app.post('/student, (req, res) => {
+ const { name, email, course } = req.body;
+ res.render('student, { name, email, course });
+});
+app.listen(port, () => {
+ console.log(server is running on port ${port});
+});
+node app.js
+13….>
+const readline = require('readline);
+const rl = readline.createinterface({
+ input: process.stdin,
+output: process.stdout
+});
+// function to calculate the area of a circle
+function calculatecirclearea(radius) {
+ return math.pi * math.pow(radius, 2);
+}
+// function to calculate the perimeter of a square
+function calculatesquareperimeter(side) {
+ return 4 * side;
+}
+// prompt user for the radius of the circle
+rl.question('enter the radius of the circle: ', (radiusinput) => {
+ const radius = parsefloat(radiusinput);
+ if (isnan(radius) || radius < 0) {
+ console.log('radius must be positive.);
+ } else {
+ const circlearea = calculatecirclearea(radius);
+ console.log(the area of the circle is: ${circlearea.tofixed(2)});
+ }
+ // prompt user for the side of the square
+ rl.question('enter the side of the square: ', (sideinput) => {
+ const side = parsefloat(sideinput);
+ if (isnan(side) || side < 0) {
+ console.log('side must be positive.);
+ } else {
+ const squareperimeter = calculatesquareperimeter(side);
+ console.log(the perimeter of the square is: ${squareperimeter});
+ }
+ // close the readline interface
+ rl.close();
+ });
+});
+node geometry.js
+14…>
+const eventemitter = require('events);
+// create a custom event emitter
+const myemitter = new eventemitter();
+// listener 1
+function listener1() {
+ console.log('listener 1 called);
+}
+// listener 2
+function listener2() {
+ console.log('listener 2 called);
+}
+// add the listeners to the common event
+myemitter.on('commonevent, listener1);
+myemitter.on('commonevent, listener2);
+// print the number of listeners associated with the emitter
+console.log(number of listeners: ${myemitter.listenercount('commonevent)});
+// emit the common event, which will trigger both listeners
+myemitter.emit('commonevent);
+// remove one of the listeners (listener2)
+myemitter.removelistener('commonevent, listener2);
+// print the number of remaining listeners
+console.log(number of remaining listeners: ${myemitter.listenercount('commonevent)});
+// emit the common event again, which will trigger only listener1
+myemitter.emit('commonevent);
+15…>
+const express = require('express);
+const multer = require('multer);
+const app = express();
+// define storage for uploaded files
+const storage = multer.diskstorage({
+ destination: 'uploads/, // specify the destination directory
+ filename: (req, file, cb) => {
+ // customize the filename as needed (e.g., keep the original filename)
+ const uniquesuffix = date.now() + '-' + math.round(math.random() * 1e9);
+ cb(null, file.fieldname + '-' + uniquesuffix + '. + file.originalname.split('.).pop());
+ },
+});
+// initialize multer with the defined storage configuration
+const upload = multer({ storage });
+// create a route to handle file uploads
+app.post('/upload, upload.single('file), (req, res) => {
+ // handle the uploaded file here (e.g., save it to a database, perform further processing)
+ res.send('file uploaded successfully);
+});
+// start the express.js server
+const port = 3000;
+app.listen(port, () => {
+ console.log(server is running on port ${port});
+})
+9….>
+mkdir weather-forecast-app
+cd weather-forecast-app
+npm init -y
+npm install express pug
+pug file
+doctype html
+html
+ head
+ title weather forecast
+ body
+ h1 welcome to the weather forecast service
+ p please enter a location to check the weather.
+ form(action="/weather", method="get")
+ input(type="text", name="location", placeholder="enter location", required)
+ button(type="submit") get weather
+pug file
+doctype html
+html
+ head
+ title weather forecast
+ body
+ h1 weather forecast for #{location}
+ p temperature: #{temperature}â°c
+ p description: #{description}
+ a(href="/") go back
+avascript
+copy code
+const express = require('express);
+const app = express();
+const port = 3000;
+// set the view engine and views directory
+app.set('view engine, 'pug);
+app.set('views, __dirname + '/views);
+// serve static files from the public directory (e.g., css, images)
+app.use(express.static('public));
+// define a route for the root url ("/") to display the welcome message
+app.get('/, (req, res) => {
+ res.render('index);
+});
+// define a route for weather forecast ("/weather")
+app.get('/weather, (req, res) => {
+ const location = req.query.location;
+ const weatherdata = {
+ location,
+ temperature: '25, // replace with actual temperature data
+ description: 'sunny, // replace with actual weather description data
+ };
+ if (!location) {
+ res.status(400).send('please provide a location.);
+ } else {
+ res.render('weather, weatherdata);
+ }
+});
+node app.js
+16…>
+mkdir form-processing-app
+cd form-processing-app
+npm init -y
+npm install express body-parser
+const express = require('express);
+const bodyparser = require('body-parser);
+const app = express();
+const port = 3000;
+// use body-parser middleware to parse form data
+app.use(bodyparser.urlencoded({ extended: false }));
+// serve static files (css, images, etc.) from the "public" directory
+app.use(express.static('public));
+// define a route to serve the html form
+app.get('/, (req, res) => {
+ res.send(`
+ <!doctype html>
+ <html>
+ <head>
+ <title>form processing</title>
+ </head>
+ <body>
+ <h1>form processing</h1>
+ <form method="post" action="/process">
+ <label for="username">username:</label>
+ <input type="text" id="username" name="username" required><br><br>
+ <label for="password">password:</label>
+ <input type="password" id="password" name="password" required><br><br>
+ <label for="confirmpassword">confirm password:</label>
+ <input type="password" id="confirmpassword" name="confirmpassword" required><br><br>
+ <label for="gender">gender:</label>
+ <select id="gender" name="gender">
+ <option value="male">male</option>
+ <option value="female">female</option>
+ <option value="other">other</option>
+ </select><br><br>
+ <input type="submit" value="submit">
+ <input type="reset" value="reset">
+ </form>
+ </body>
+ </html>
+ `);
+});
+// define a route to process the form data
+app.post('/process, (req, res) => {
+ const { username, password, confirmpassword, gender } = req.body;
+ if (password === confirmpassword) {
+ res.send(`
+ <h1>form processed successfully</h1>
+ <p>username: ${username}</p>
+ <p>password: ${password}</p>
+ <p>gender: ${gender}</p>
+ `);
+ } else {
+ res.send('<p style="color: red;">password and confirm password do not match. please try 
+again.</p>);
+ }
+});
+// start the express.js server
+app.listen(port, () => {
+ console.log(server is running on port ${port});
+});
+node app.js
+17 
+import react, { component } from 'react;
+import './app.css;
+class app extends component {
+ constructor() {
+ super();
+ this.state = {
+ tasks: [],
+ newtask: ',
+ };
+ }
+ handleinputchange = (event) => {
+ this.setstate({ newtask: event.target.value });
+ };
+ addtask = () => {
+ const { newtask, tasks } = this.state;
+ if (newtask.trim() !== ') {
+ this.setstate({
+ tasks: […tasks, newtask],
+ newtask: ',
+ });
+ }
+ };
+ render() {
+ const { tasks, newtask } = this.state;
+ return (
+ <div classname="app">
+ <h1>to-do list</h1>
+ <div classname="task-input">
+ <input
+ type="text"
+ placeholder="enter a task"
+ value={newtask}
+ onchange={this.handleinputchange}
+ />
+ <button onclick={this.addtask}>add</button>
+ </div>
+ <ul>
+ {tasks.map((task, index) => (
+ <li key={index}>{task}</li>
+ ))}
+ </ul>
+ </div>
+ );
+ }
+}
+export default app;
+18 
+import react, { component } from 'react;
+import './app.css;
+class app extends component {
+ constructor() {
+ super();
+ this.state = {
+ time: new date().tolocaletimestring(),
+ };
+ }
+ componentdidmount() {
+ // update the time every second
+ this.intervalid = setinterval(() => {
+ this.setstate({
+ time: new date().tolocaletimestring(),
+ });
+ }, 1000);
+ }
+ componentwillunmount() {
+ // clear the interval when the component unmounts
+ clearinterval(this.intervalid);
+ }
+ render() {
+ const { time } = this.state;
+ return (
+ <div classname="app">
+ <h1>digital clock</h1>
+ <p>{time}</p>
+ </div>
+ );
+ }
+}
+export default app;
+19
+import react, { component } from 'react;
+import './stockdetail.css;
+class stockdetail extends component {
+ constructor() {
+ super();
+ this.state = {
+ name: ',
+ purchaseprice: ',
+ purchasequantity: ',
+ sellingprice: ',
+ sellingquantity: ',
+ stocks: [],
+ };
+ }
+ handleinputchange = (event) => {
+ const { name, value } = event.target;
+ this.setstate({ [name]: value });
+ };
+ addstock = () => {
+ const {
+ name,
+ purchaseprice,
+ purchasequantity,
+ sellingprice,
+ sellingquantity,
+ stocks,
+ } = this.state;
+ if (parseint(sellingquantity) > parseint(purchasequantity)) {
+ alert('selling quantity cannot be more than purchase quantity.);
+ return;
+ }
+ const profitloss =
+ parseint(sellingquantity) < parseint(purchasequantity)
+ ? 'invested
+ : (sellingprice – purchaseprice) * sellingquantity;
+ const newstock = {
+ name,
+ purchaseprice,
+ purchasequantity,
+ sellingprice,
+ sellingquantity,
+ profitloss,
+ };
+ this.setstate({
+ stocks: […stocks, newstock],
+ name: ',
+ purchaseprice: ',
+ purchasequantity: ',
+ sellingprice: ',
+ sellingquantity: ',
+ });
+ };
+ render() {
+ const { name, purchaseprice, purchasequantity, sellingprice, sellingquantity, stocks } = this.state;
+ return (
+ <div classname="stockdetail">
+ <h2>stock detail</h2>
+ <div classname="input-fields">
+ <input
+ type="text"
+ name="name"
+ placeholder="name"
+ value={name}
+ onchange={this.handleinputchange}
+ />
+ <input
+ type="number"
+ name="purchaseprice"
+ placeholder="purchase price"
+ value={purchaseprice}
+ onchange={this.handleinputchange}
+ />
+ <input
+ type="number"
+ name="purchasequantity"
+ placeholder="purchase quantity"
+ value={purchasequantity}
+ onchange={this.handleinputchange}
+ />
+ <input
+ type="number"
+ name="sellingprice"
+ placeholder="selling price"
+ value={sellingprice}
+ onchange={this.handleinputchange}
+ />
+ <input
+ type="number"
+ name="sellingquantity"
+ placeholder="selling quantity"
+ value={sellingquantity}
+ onchange={this.handleinputchange}
+ />
+ <button onclick={this.addstock}>add stock</button>
+ </div>
+ <table>
+ <thead>
+ <tr>
+ <th>name</th>
+ <th>purchase price</th>
+ <th>purchase quantity</th>
+ <th>selling price</th>
+ <th>selling quantity</th>
+ <th>profit/loss</th>
+ </tr>
+ </thead>
+ <tbody>
+ {stocks.map((stock, index) => (
+ <tr key={index}>
+ <td>{stock.name}</td>
+ <td>{stock.purchaseprice}</td>
+ <td>{stock.purchasequantity}</td>
+ <td>{stock.sellingprice}</td>
+ <td>{stock.sellingquantity}</td>
+ <td classname={stock.profitloss === 'invested ? 'invested : stock.profitloss >= 0 ? 'profit : 
+'loss}>
+ {stock.profitloss === 'invested ? 'invested : $${stock.profitloss}}
+ </td>
+ </tr>
+ ))}
+ </tbody>
+ </table>
+ </div>
+ );
+ }
+}
+export default stockdetail;
+20
+to enhance the vegetablecategories react component as per your requirements, follow these steps:
+1. default selection:
+ - initialize the default selected category state in the components constructor.
+ - populate the defaultcategory state with the initial category ('fruits) and three random fruits.
+jsx
+constructor() {
+ super();
+ this.state = {
+ selectedcategory: 'fruits,
+ categories: object.keys(vegetabledata),
+ defaultcategory: {
+ name: 'fruits,
+ vegetables: vegetabledata['fruits].slice(0, 3),
+ },
+ error: null,
+ };
+}
+
+2. add a new category:
+ - expand the vegetabledata object to include the "legumes" category with its vegetables.
+jsx
+const vegetabledata = {
+ fruits: ['tomato, 'cucumber, 'bell pepper],
+ leafygreens: ['spinach, 'kale, 'lettuce],
+ rootvegetables: ['carrot, 'potato, 'beetroot],
+ legumes: ['lentils, 'chickpeas, 'black beans],
+};
+
+3. display new category:
+ - create a function to update the selected category and handle its associated vegetables.
+jsx
+handlecategorychange = (event) => {
+ const selectedcategory = event.target.value;
+ if (selectedcategory === 'select category) {
+ this.setstate({ selectedcategory, error: 'please select a category., defaultcategory: null });
+ } else if (vegetabledata[selectedcategory]) {
+ this.setstate({ selectedcategory, error: null, defaultcategory: null });
+ } else {
+ this.setstate({ selectedcategory, error: 'category not found., defaultcategory: null });
+ }
+};
+
+4. styling:
+ - apply css or a css-in-js approach to style the component. below is a basic example using css:
+css
+/* vegetablecategories.css */
+.vegetablecategories {
+ max-width: 400px;
+ margin: 0 auto;
+ padding: 20px;
+ border: 1px solid #ccc;
+ box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+.error {
+ color: red;
+ font-weight: bold;
+}
+select {
+ width: 100%;
+ padding: 10px;
+ margin-bottom: 10px;
+}
+ul {
+ list-style-type: none;
+ padding: 0;
+}
+li {
+ margin: 5px 0;
+}
+
+remember to import the css file into your component:
+jsx
+import './vegetablecategories.css;
+
+now, your vegetablecategories component should be enhanced with the requested features, error 
+handling, and styling. it defaults to the "fruits" category, displays the "legumes" category when 
+selected, and handles errors appropriately. the styling can be customized further to match your desired 
+visual appeal.
+21 
+to create a replica set and perform these actions, you typically work with mongodb. below are step-bystep instructions on how to achieve your goal:
+1. *set up replica set*:
+ first, make sure you have mongodb installed and running.
+ start three separate mongodb instances on ports 27017, 27018, and 27019, each in its own terminal 
+window.
+ bash
+ mongod –port 27017 –replset rs1
+ mongod –port 27018 –replset rs1
+ mongod –port 27019 –replset rs1
+ 
+2. *initialize replica set*:
+ connect to the primary instance (port 27017) and initialize the replica set:
+ bash
+ mongo –port 27017
+➢ rs.initiate()
+ 
+ then, add the other two instances to the replica set:
+ bash
+ > rs.add("localhost:27018")
+ > rs.add("localhost:27019")
+ 
+3. *create a collection and insert documents*:
+ on the primary port (27017), create a database (e.g., "mydb") and a collection (e.g., "student"). insert 
+some sample documents into the "student" collection:
+ bash
+ > use mydb
+ > db.createcollection("student")
+ > db.student.insertmany([
+ { name: "alice", age: 18, date: new date() },
+ { name: "bob", age: 20, date: new date() },
+ { name: "charlie", age: 15, date: new date() },
+ { name: "david", age: 25, date: new date() }
+ ])
+ 
+4. *read documents on replica port*:
+ connect to one of the secondary instances (port 27018 or 27019) to read documents with age greater 
+than 15:
+ bash
+ mongo –port 27018
+ > rs.slaveok() // allow reading from secondary
+ > use mydb
+ > db.student.find({ age: { $gt: 15 } })
+ 
+this setup replicates data from the primary (port 27017) to the secondary (port 27018 or 27019) in the 
+"rs1" replica set. you can read documents on the secondary with the rs.slaveok() command. make sure 
+to adjust the port numbers and database/collection names to match your specific configuration if 
+necessary.
+22--------
+to create an html form with validations and insert data into a mongodb collection, youll need a 
+combination of html for the form, javascript for validation, and a backend (e.g., node.js with express) 
+to handle the mongodb insertion. heres a simplified example:
+**html (form.html)**:
+html
+<!doctype html>
+<html>
+<head>
+ <title>form</title>
+</head>
+<body>
+ <h2>employee details</h2>
+ <form id="employeeform" action="/submit" method="post">
+ <label for="name">name (3-12 characters, capital letters only):</label>
+ <input type="text" id="name" name="name" required pattern="[a-z]{3,12}" /><br /><br />
+ <label for="email">email (valid email address):</label>
+ <input type="email" id="email" name="email" required /><br /><br />
+ <label for="doj">date of joining (1-1-2010 to 31-12-2022):</label>
+ <input type="date" id="doj" name="doj" required
+ min="2010-01-01" max="2022-12-31" /><br /><br />
+ <input type="submit" value="submit" />
+ </form>
+</body>
+</html>
+
+**javascript (script.js)**:
+this javascript file is responsible for client-side validation. it ensures that the form data meets the 
+specified requirements before submission.
+javascript
+document.getelementbyid('employeeform).addeventlistener('submit, function € {
+ const namefield = document.getelementbyid('name);
+ const emailfield = document.getelementbyid('email);
+ const dojfield = document.getelementbyid('doj);
+ if (!namefield.checkvalidity()) {
+ alert('invalid name format. use 3-12 capital letters only.);
+ e.preventdefault();
+ return;
+ }
+ if (!emailfield.checkvalidity()) {
+ alert('invalid email format.);
+ e.preventdefault();
+ return;
+ }
+ if (!dojfield.checkvalidity()) {
+ alert('invalid date. use a date between 1-1-2010 and 31-12-2022.);
+ e.preventdefault();
+ return;
+ }
+});
+
+**node.js (app.js)**:
+heres a basic node.js and express app to handle form submission and database insertion.
+javascript
+const express = require('express);
+const mongoose = require('mongoose);
+const bodyparser = require('body-parser);
+const app = express();
+app.use(bodyparser.urlencoded({ extended: true }));
+app.use(express.static('public)); // serve html and js files from the 'public folder.
+mongoose.connect('mongodb://localhost/mydb, { usenewurlparser: true, useunifiedtopology: true });
+const detailsschema = new mongoose.schema({
+ name: string,
+ email: string,
+ doj: date
+});
+const detail = mongoose.model('detail, detailsschema);
+app.post('/submit, (req, res) => {
+ const name = req.body.name.touppercase().trim();
+ const email = req.body.email;
+ const doj = req.body.doj;
+ const newdetail = new detail({ name, email, doj });
+ newdetail.save((err) => {
+ if (err) {
+ console.error(err);
+ res.redirect('/error.html); // redirect to an error page if theres an issue.
+ } else {
+ res.redirect('/success.html); // redirect to a success page after successful insertion.
+ }
+ });
+});
+app.listen(3000, () => {
+ console.log('server started on port 3000);
+});
+
+please note that this is a simplified example for demonstration purposes. in a production environment, 
+you should handle errors more gracefully and securely. additionally, you would typically use 
+environment variables for database connections and employ best practices for security.
+23------
+const mongoclient = require('mongodb).mongoclient;
+// connection url and database name
+const url = 'mongodb://localhost:27017;
+const dbname = 'maindata;
+// create a new mongoclient
+const client = new mongoclient(url, { usenewurlparser: true, useunifiedtopology: true });
+// connect to the mongodb server
+client.connect(async (err) => {
+ if (err) {
+ console.error('error connecting to the database:, err);
+ return;
+ }
+ const db = client.db(dbname);
+ const userdata = db.collection('userdata);
+ // task 1: insert a category field with value "seniorcitizen" for age > 60
+ await userdata.updatemany({ age: { $gt: 60 } }, { $set: { category: 'seniorcitizen } });
+ // task 2: sort the collection by age in descending order and display the youngest persons name only
+ const youngest = await userdata.find().sort({ age: -1 }).limit(1).toarray();
+ console.log('youngest person name:, youngest[0].name);
+ // task 3: display total number of documents having age between 30 and 60 only
+ const agebetween30and60count = await userdata.countdocuments({ age: { $gte: 30, $lte: 60 } });
+ console.log('total documents with age between 30 and 60:, agebetween30and60count);
+ // task 4: display only the surname field in ascending order of age
+ const surnamesascending = await userdata.find({}, { projection: { _id: 0, surname: 1 } }).sort({ age: 1 
+}).toarray();
+ console.log('surnames in ascending order of age:, surnamesascending);
+ // task 5: delete the record having age greater than 60
+ await userdata.deletemany({ age: { $gt: 60 } });
+ // close the connection
+ client.close();
+});
+24-------
+import react, { component } from 'react;
+import './app.css;
+class app extends component {
+ constructor() {
+ super();
+ this.state = {
+ text: 'hello,
+ color: 'red,
+ ishidden: false,
+ };
+ }
+ handletoggletext = () => {
+ this.setstate((prevstate) => ({
+ text: prevstate.text === 'hello ? 'welcome : 'hello,
+ }));
+ };
+ handletogglecolor = () => {
+ this.setstate((prevstate) => ({
+ color: prevstate.color === 'red ? 'blue : 'red,
+ }));
+ };
+ handletogglevisibility = () => {
+ this.setstate((prevstate) => ({
+ ishidden: !prevstate.ishidden,
+ }));
+ };
+ render() {
+ const { text, color, ishidden } = this.state;
+ return (
+ <div classname="app">
+ <button onclick={this.handletoggletext}>change text</button>
+ <button ondoubleclick={this.handletogglecolor}>change color</button>
+ <button onclick={this.handletogglevisibility}>
+ {ishidden ? 'show : 'hide}
+ </button>
+ <h1 style={{ color }}>{text}</h1>
+ {!ishidden && <h2>good morning</h2>}
+ </div>
+ );
+ }
+}
+export default app;
+25--------
+creating a basic to-do list react component with mongodb integration involves setting up the react app, 
+creating the component, and implementing the necessary functionality. heres a step-by-step guide:
+1. *set up a react app*:
+ create a new react app if you havent already using create react app or your preferred method.
+ bash
+ npx create-react-app todo-list-mongodb
+ cd todo-list-mongodb
+ 
+2. *install required dependencies*:
+ install the mongodb node.js driver to interact with mongodb from your node.js server:
+ bash
+ npm install mongodb
+ 
+3. *create a tasklist component*:
+ create a new file called tasklist.js in the src directory and define your tasklist component with the 
+required functionality.
+ jsx
+ import react, { component } from 'react;
+ import './tasklist.css; // create this css file for styling
+ class tasklist extends component {
+ constructor(props) {
+ super(props);
+ this.state = {
+ tasks: [],
+ newtask: ',
+ };
+ }
+ // implement methods for adding, toggling completion, and filtering tasks
+ render() {
+ // render the task list, input field, filter buttons, and implement event handlers
+ return (
+ <div classname="tasklist">
+ {/* render the ui elements */}
+ </div>
+ );
+ }
+ }
+ export default tasklist;
+ 
+4. *implement mongodb integration*:
+ in the same component, add code to connect to mongodb, insert and retrieve tasks from the "tasklist" 
+collection, and handle state updates accordingly.
+5. *implement task management logic*:
+ inside your tasklist component, create methods to add new tasks, toggle task completion, and filter 
+tasks based on their completion status.
+6. *styling*:
+ create a css file (e.g., tasklist.css) to style your task list and related elements.
+7. *use the component*:
+ import and use the tasklist component in your app.js or any other parent component.
+8. *set up mongodb*:
+ make sure you have mongodb running locally or on a remote server. create a database named "task" 
+and a collection named "tasklist" to store the tasks.
+ *note*: in a production environment, you should set up a server to interact with mongodb and not 
+directly access the database from the react app for security reasons.
+this is a high-level overview of how to create a basic to-do list react component with mongodb 
+integration. the actual implementation involves coding the details of adding, toggling, filtering tasks, and 
+handling the database interactions.
+26-------
+import react, { component } from 'react;
+import './expensetracker.css; // create this css file for styling
+class expensetracker extends component {
+ constructor() {
+ super();
+ this.state = {
+ expenses: [],
+ newexpense: {
+ name: ',
+ amount: ',
+ category: 'food,
+ date: ',
+ },
+ filtercategory: 'all,
+ filterdate: 'all,
+ error: null,
+ };
+ }
+ // implement methods for adding expenses, filtering, and handling errors
+ render() {
+ const { expenses, newexpense, filtercategory, filterdate, error } = this.state;
+ return (
+ <div classname="expensetracker">
+ {/* render the list of expenses, input fields, filter controls, and error messages */}
+ </div>
+ );
+ }
+}
+export default expensetracker
+27-----
+creating a react component for a weather application with the specified features involves setting up the 
+component, handling user input, fetching weather data, and displaying it. heres a simplified example:
+jsx
+import react, { component } from 'react;
+import './weatherapp.css; // create this css file for styling
+class weatherapp extends component {
+ constructor() {
+ super();
+ this.state = {
+ cityname: ',
+ weatherdata: null,
+ error: null,
+ };
+ }
+ handlecitychange = (event) => {
+ this.setstate({ cityname: event.target.value });
+ };
+ fetchweatherdata = () => {
+ const apikey = 'your_api_key; // replace with your actual api key
+ const { cityname } = this.state;
+ const apiurl = 
+`https://api.openweathermap.org/data/2.5/weather?q=${cityname}&appid=${apikey}&units=metric`;
+ fetch(apiurl)
+ .then((response) => response.json())
+ .then((data) => {
+ if (data.cod === 200) {
+ this.setstate({ weatherdata: data, error: null });
+ } else {
+ this.setstate({ weatherdata: null, error: data.message });
+ }
+ })
+ .catch((error) => {
+ this.setstate({ weatherdata: null, error: 'network issue. please try again. });
+ });
+ };
+ render() {
+ const { cityname, weatherdata, error } = this.state;
+ return (
+ <div classname="weatherapp">
+ <h2>weather app</h2>
+ <input
+ type="text"
+ placeholder="enter city name"
+ value={cityname}
+ onchange={this.handlecitychange}
+ />
+ <button onclick={this.fetchweatherdata}>get weather</button>
+ {error && <p classname="error">{error}</p>}
+ {weatherdata && (
+ <div>
+ <h3>{weatherdata.name}</h3>
+ <p>temperature: {weatherdata.main.temp}°c</p>
+ <p>weather: {weatherdata.weather[0].description}</p>
+ </div>
+ )}
+ </div>
+ );
+ }
+}
+export default weatherapp;
+
+in this example:
+1. we have an input field for entering the city name, a button to fetch weather data, and a display area
+for the weather information.
+2. we use the openweathermap api (replace 'your_api_key with your actual api key) to fetch 
+weather data based on the users input.
+3. we handle errors, such as a city not found or network issues, by displaying error messages.
+4. when successful, we display the city name, temperature, and weather description.
+remember to replace 'your_api_key with a valid api key from openweathermap or any other 
+weather data provider you prefer. additionally, you can style the component by creating a css file 
+(weatherapp.css) to make it visually appealing.
+28---
+creating a reactjs script for a form with the specified fields and inserting the submitted values into a 
+mongodb database requires a combination of frontend and backend development. below is an example 
+of how you can create the frontend component in react and outline the backend setup.
+*frontend (reactjs):*
+1. create a react component that represents the form with the specified fields and handles user 
+input:
+jsx
+import react, { component } from 'react;
+class userform extends component {
+ constructor() {
+ super();
+ this.state = {
+ city: 'ahmedabad,
+ bloodgroup: 'o+,
+ };
+ }
+ handlecitychange = (event) => {
+ this.setstate({ city: event.target.value });
+ };
+ handlebloodgroupchange = (event) => {
+ this.setstate({ bloodgroup: event.target.value });
+ };
+ handlesubmit = () => {
+ const { city, bloodgroup } = this.state;
+ // send the data to the backend for database insertion
+ fetch('/api/adduser, {
+ method: 'post,
+ headers: {
+ 'content-type: 'application/json,
+ },
+ body: json.stringify({ city, bloodgroup }),
+ })
+ .then((response) => response.json())
+ .then((data) => {
+ console.log(data);
+ // reset the form or show a success message as needed
+ })
+ .catch((error) => {
+ console.error('error:, error);
+ });
+ };
+render() {
+ return (
+ <div>
+ <h2>user registration form</h2>
+ <div>
+ <label>
+ city:
+ <select value={this.state.city} onchange={this.handlecitychange}>
+ <option value="ahmedabad">ahmedabad</option>
+ <option value="rajkot">rajkot</option>
+ <option value="surat">surat</option>
+ <option value="vadodara">vadodara</option>
+ </select>
+ </label>
+ </div>
+ <div>
+ <label>
+ blood group:
+ <input
+ type="radio"
+ name="bloodgroup"
+ value="o+"
+ checked={this.state.bloodgroup === 'o+}
+ onchange={this.handlebloodgroupchange}
+ />
+ o+
+ {/* repeat similar input elements for other blood group options */}
+ </label>
+ </div>
+ <button onclick={this.handlesubmit}>submit</button>
+ </div>
+ );
+ }
+}
+export default userform;
+
+*backend (node.js with express and mongodb):*
+set up a backend server using node.js and express to handle the post request for adding a user to the 
+mongodb database. heres a basic outline:
+1. install the required dependencies (express, mongoose for mongodb, etc.):
+bash
+npm install express mongoose body-parser
+
+2. create a server file (e.g., server.js) for your node.js backend:
+javascript
+const express = require('express);
+const mongoose = require('mongoose);
+const bodyparser = require('body-parser);
+const app = express();
+const port = process.env.port || 5000;
+// connect to mongodb (replace 'mongodb://localhost/mydb with your mongodb connection url)
+mongoose.connect('mongodb://localhost/lju, { usenewurlparser: true, useunifiedtopology: true });
+const db = mongoose.connection;
+db.on('error, console.error.bind(console, 'mongodb connection error:));
+db.once('open, () => {
+ console.log('connected to mongodb);
+});
+// define a user schema and model (adjust as needed)
+const userschema = new mongoose.schema({
+ city: string,
+ bloodgroup: string,
+});
+const user = mongoose.model('user, userschema);
+// middleware for parsing json requests
+app.use(bodyparser.json());
+// define a route to add a user to the database
+app.post('/api/adduser, (req, res) => {
+ const { city, bloodgroup } = req.body;
+ const newuser = new user({ city, bloodgroup });
+ newuser.save((err) => {
+ if (err) {
+ console.error('error inserting user:, err);
+ res.status(500).json({ error: 'error inserting user });
+ } else {
+ console.log('user inserted successfully);
+ res.json({ message: 'user inserted successfully });
+ }
+ });
+});
+// start the server
+app.listen(port, () => {
+ console.log(`server is running on port ${port}`);
+});
+
+3. replace the mongodb connection url with your actual mongodb connection url.
+4. run your node.js server using node server.js.
+this setup provides a basic structure for handling the frontend form submission and inserting the 
+submitted data into a mongodb database. youll need to replace the connection url and adapt the code 
+as needed for your specific application 
+29----
+import react from 'react;
+import { browserrouter as router, route, link, switch, redirect } from 'react-router-dom;
+const subjectindex = () => (
+ <div>
+ <h2>subject index</h2>
+ <ul>
+ <li>
+ <link to="/fsd2/json">json</link>
+ </li>
+ <li>
+ <link to="/fsd2/nodejs">nodejs/expressjs</link>
+ </li>
+ <li>
+ <link to="/fsd2/reactjs">react js</link>
+ </li>
+ </ul>
+ </div>
+);
+const content = () => (
+ <div>
+ <h2>content</h2>
+ <table>
+ <tr>
+ <th>topic</th>
+ <th>details</th>
+ </tr>
+ <tr>
+ <td>json</td>
+ <td>json content goes here.</td>
+ </tr>
+ <tr>
+ <td>nodejs/expressjs</td>
+ <td>nodejs/expressjs content goes here.</td>
+ </tr>
+ <tr>
+ <td>react js</td>
+ <td>react js content goes here.</td>
+ </tr>
+ </table>
+ </div>
+);
+const nopage = () => (
+ <div>
+ <h2>no page found</h2>
+ <p>sorry, the page you requested does not exist.</p>
+ </div>
+);
+const app = () => (
+ <router>
+ <div>
+ <switch>
+ <route path="/fsd2" exact component={subjectindex} />
+ <route path="/fsd2/json" component={content} />
+ <route path="/fsd2/nodejs" component={content} />
+ <route path="/fsd2/reactjs" component={content} />
+ <route path="/no-page" component={nopage} />
+ <redirect from="/" to="/fsd2" />
+ <redirect to="/no-page" />
+ </switch>
+ </div>
+ </router>
+);
+export default app;
+30----
+creating a reactjs script for a form with two fields (subject name and marks) and inserting the entered 
+values into a mongodb database requires a combination of frontend and backend development. below 
+is an example of how you can create the frontend component in react and outline the backend setup.
+*frontend (reactjs):*
+1. create a react component that represents the form with the specified fields and handles user 
+input:
+jsx
+import react, { component } from 'react;
+class studentform extends component {
+ constructor() {
+ super();
+ this.state = {
+ subjectname: 'fsd2,
+ marks: ',
+ };
+ }
+ handlesubjectnamechange = (event) => {
+ this.setstate({ subjectname: event.target.value });
+ };
+ handlemarkschange = (event) => {
+ this.setstate({ marks: event.target.value });
+ };
+ handlesubmit = () => {
+ const { subjectname, marks } = this.state;
+ // send the data to the backend for database insertion
+ fetch('/api/addstudentdata, {
+ method: 'post,
+ headers: {
+ 'content-type: 'application/json,
+ },
+ body: json.stringify({ subjectname, marks }),
+ })
+ .then((response) => response.json())
+ .then((data) => {
+ console.log(data);
+ // reset the form or show a success message as needed
+ })
+ .catch((error) => {
+ console.error('error:, error);
+ });
+ };
+ render() {
+ return (
+ <div>
+ <h2>student data form</h2>
+ <div>
+ <label>
+ subject name:
+ <select value={this.state.subjectname} onchange={this.handlesubjectnamechange}>
+ <option value="fsd2">fsd2</option>
+ <option value="fcsp2">fcsp2</option>
+ <option value="ds">ds</option>
+ <option value="toc">toc</option>
+ <option value="coa">coa</option>
+ </select>
+ </label>
+ </div>
+ <div>
+ <label>
+ marks:
+ <input
+ type="text"
+ value={this.state.marks}
+ onchange={this.handlemarkschange}
+ />
+ </label>
+ </div>
+ <button onclick={this.handlesubmit}>submit</button>
+ </div>
+ );
+ }
+}
+export default studentform;
+
+*backend (node.js with express and mongodb):*
+set up a backend server using node.js and express to handle the post request for adding student data to 
+the mongodb database. heres a basic outline:
+1. install the required dependencies (express, mongoose for mongodb, etc.):
+bash
+npm install express mongoose body-parser
+
+2. create a server file (e.g., server.js) for your node.js backend:
+javascript
+const express = require('express);
+const mongoose = require('mongoose);
+const bodyparser = require('body-parser);
+const app = express();
+const port = process.env.port || 5000;
+// connect to mongodb (replace 'mongodb://localhost/mydb with your mongodb connection url)
+mongoose.connect('mongodb://localhost/studentdata, { usenewurlparser: true, useunifiedtopology: 
+true });
+const db = mongoose.connection;
+db.on('error, console.error.bind(console, 'mongodb connection error:));
+db.once('open, () => {
+ console.log('connected to mongodb);
+});
+// define a studentdata schema and model (adjust as needed)
+const studentdataschema = new mongoose.schema({
+ subjectname: string,
+ marks: number,
+});
+const studentdata = mongoose.model('information, studentdataschema);
+// middleware for parsing json requests
+app.use(bodyparser.json());
+// define a route to add student data to the database
+app.post('/api/addstudentdata, (req, res) => {
+ const { subjectname, marks } = req.body;
+ const newstudentdata = new studentdata({ subjectname, marks });
+ newstudentdata.save((err) => {
+ if (err) {
+ console.error('error inserting student data:, err);
+ res.status(500).json({ error: 'error inserting student data });
+ } else {
+ console.log('student data inserted successfully);
+ res.json({ message: 'student data inserted successfully });
+ }
+ });
+});
+// start the server
+app.listen(port, () => {
+ console.log(`server is running on port ${port}`);
+});
+
+3. replace the mongodb connection url with your actual mongodb connection url.
+4. run your node.js server using node server.js.
+this setup provides a basic structure for handling the frontend form submission and inserting the 
+submitted data into a mongodb database. youll need to adapt the code as needed for your specific 
+application and replace the connection url with your actual mongodb connection url.
+31----
+to create an html form for collecting data and apply validations, you can use html, javascript, and 
+mongodb. heres an example of an html form with validation rules and the corresponding node.js 
+backend to insert data into a mongodb collection:
+*html form (form.html):*
+html
+<!doctype html>
+<html lang="en">
+<head>
+ <meta charset="utf-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <title>exam registration</title>
+</head>
+<body>
+ <h1>exam registration</h1>
+ <form id="examform">
+ <label for="name">name (max 12 characters, uppercase only):</label>
+ <input type="text" id="name" name="name" maxlength="12" pattern="[a-z]+" 
+required><br><br>
+ 
+ <label for="email">email:</label>
+ <input type="email" id="email" name="email" required><br><br>
+ 
+ <label for="city">city (ahmedabad, gandhinagar, vadodara):</label>
+ <input type="text" id="city" name="city" pattern="^(ahmedabad|gandhinagar|vadodara)$" 
+required><br><br>
+ 
+ <label for="examdate">date of exam (between 1-10-2023 and 12-10-2023):</label>
+ <input type="date" id="examdate" name="examdate" min="2023-10-01" max="2023-10-12" 
+required><br><br>
+ 
+ <input type="submit" value="submit">
+ </form>
+ <script src="form.js"></script>
+</body>
+</html>
+
+*javascript for form validation (form.js):*
+javascript
+document.addeventlistener("domcontentloaded", function () {
+ const form = document.getelementbyid("examform");
+ form.addeventlistener("submit", function (event) {
+ event.preventdefault();
+ // get form values
+ const name = document.getelementbyid("name").value.trim().touppercase();
+ const email = document.getelementbyid("email").value;
+ const city = document.getelementbyid("city").value.tolowercase();
+ const examdate = document.getelementbyid("examdate").value;
+ // perform additional validation here if needed
+ // …
+ // create an object with the form data
+ const formdata = {
+ name,
+ email,
+ city,
+ examdate,
+ };
+ // send the data to the server for insertion into mongodb
+ fetch("/api/addexamdata", {
+ method: "post",
+ headers: {
+ "content-type": "application/json",
+ },
+ body: json.stringify(formdata),
+ })
+ .then((response) => response.json())
+ .then((data) => {
+ console.log(data);
+ // handle success or display error messages to the user
+ })
+ .catch((error) => {
+ console.error("error:", error);
+ // handle errors or display error messages to the user
+ });
+ });
+});
+
+*node.js backend for mongodb insertion (server.js):*
+assuming you have mongodb set up and running, you can create a node.js server to handle the form 
+submission and insert data into the mongodb collection. youll need to use a mongodb driver like 
+mongoose. heres a simplified example:
+javascript
+const express = require("express");
+const mongoose = require("mongoose");
+const bodyparser = require("body-parser");
+const app = express();
+const port = process.env.port || 3000;
+mongoose.connect("mongodb://localhost/exam", {
+ usenewurlparser: true,
+ useunifiedtopology: true,
+});
+const db = mongoose.connection;
+db.on("error", console.error.bind(console, "mongodb connection error:"));
+db.once("open", () => {
+ console.log("connected to mongodb");
+});
+const examschema = new mongoose.schema({
+ name: string,
+ email: string,
+ city: string,
+ examdate: date,
+});
+const exam = mongoose.model("exam", examschema);
+app.use(bodyparser.json());
+app.post("/api/addexamdata", (req, res) => {
+ const { name, email, city, examdate } = req.body;
+ const newexam = new exam({ name, email, city, examdate });
+ newexam.save((err) => {
+ if (err) {
+ console.error("error inserting exam data:", err);
+ res.status(500).json({ error: "error inserting exam data" });
+ } else {
+ console.log("exam data inserted successfully");
+ res.json({ message: "exam data inserted successfully" });
+ }
+ });
+});
+app.listen(port, () => {
+ console.log(`server is running on port ${port}`);
+});
+
+this example sets up an html form with validation rules, a frontend javascript file (form.js) to 
+handle form submission and send data to the server, and a node.js backend (server.js) to receive the 
+data and insert it into a mongodb collection named "exam." make sure to adjust the mongodb 
+connection url and schema as needed for your environment.
+32----
+to perform the mentioned tasks using node.js and mongoose with the given employee collection, you 
+can follow these steps:
+1. set up mongoose and connect to your mongodb database.
+javascript
+const mongoose = require('mongoose);
+mongoose.connect('mongodb://localhost/main, { usenewurlparser: true, useunifiedtopology: true });
+const db = mongoose.connection;
+db.on('error, console.error.bind(console, 'mongodb connection error:));
+db.once('open, () => {
+ console.log('connected to mongodb);
+});
+// define the employee schema
+const employeeschema = new mongoose.schema({
+ name: string,
+ age: number,
+ position: string,
+ salary: number,
+});
+const employee = mongoose.model('employee, employeeschema);
+
+2. insert the provided data into the "main" collection:
+javascript
+const initialdata = [
+ // … the provided employee data …
+];
+employee.insertmany(initialdata, (err) => {
+ if (err) {
+ console.error('error inserting data:, err);
+ } else {
+ console.log('data inserted successfully);
+ }
+});
+
+3. perform the requested queries:
+javascript
+// (1) update or insert a document with age 43 and position "senior manager"
+employee.updateone(
+ { age: 43, position: 'senior manager },
+ { $set: { experience: 17 } },
+ { upsert: true },
+ (err, result) => {
+ if (err) {
+ console.error('error updating/inserting document:, err);
+ } else {
+ console.log('document updated/inserted successfully);
+ }
+ }
+);
+// (2) find the employee with the highest salary
+employee.findone().sort({ salary: -1 }).exec((err, employee) => {
+ if (err) {
+ console.error('error finding employee:, err);
+ } else {
+ console.log(`employee with highest salary: ${employee.name}, position: ${employee.position}`);
+ }
+});
+// (3) count documents where name contains "ric"
+employee.countdocuments({ name: /ric/ }, (err, count) => {
+ if (err) {
+ console.error('error counting documents:, err);
+ } else {
+ console.log(`number of documents with "ric" in name: ${count}`);
+ }
+});
+// (4) increase the salary of employees with salary less than 45000 by 10%
+employee.updatemany({ salary: { $lt: 45000 } }, { $mul: { salary: 1.1 } }, (err, result) => {
+ if (err) {
+ console.error('error updating salaries:, err);
+ } else {
+ console.log(`salaries updated for ${result.nmodified} employees`);
+ }
+});
+// (5) find positions where name has 4 or 5 letters
+employee.distinct('position, { name: /^[a-za-z]{4,5}$/ }, (err, positions) => {
+ if (err) {
+ console.error('error finding positions:, err);
+ } else {
+ console.log(`positions with names containing 4 or 5 letters: ${positions}`);
+ }
+});
+
+make sure to adjust the mongodb connection url and schema as needed for your environment. this 
+code sets up the mongoose schema, inserts initial data, and performs the requested queries on the 
+"main" collection.
